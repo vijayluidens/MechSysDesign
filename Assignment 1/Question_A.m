@@ -9,6 +9,7 @@ c1 = 0.1; %Ns/m
 c2 = 0.1; %Ns/m
 c3 = 0.1; %Ns/m
 
+
 % Mass matrix
 M = [m1 0 0;
     0 m2 0;
@@ -23,5 +24,10 @@ C = [c1+c2 -c2 0;
 K = [k1+k2 -k2 0;
     -k2 k2+k3 -k3
     0 -k3 k3];
+
+%Eigenmatrix
+
+% This is an updated version
+
 
 
