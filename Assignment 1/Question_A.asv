@@ -1,0 +1,19 @@
+% System Parameters
+m1 = 2; %kg
+m2 = 0.2; %kg
+m3 = 0.05; %kg
+k1 = 10e3; %N/m
+k2 = 30e3; %N/m
+k3 = 40e3; %N/m
+c1 = 0.1; %Ns/m
+c2 = 0.1; %Ns/m
+c3 = 0.1; %Ns/m
+
+% Mass matrix
+M = [m1 0 0;
+    0 m2 0;
+    0 0 m3];
+
+% Damping matrix
+
+C = [c1 ]
