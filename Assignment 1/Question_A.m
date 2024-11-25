@@ -50,4 +50,20 @@ end
 
 sgtitle('Transfer Function Matrix H(s) (Frequency in Hz)');
 
+%% Question A.3
+
+% In order to include damping in our system, 
+% we must convert our system to state space
+
+%State space matrix A
+zero = zeros(size(M)); % Zero matrix
+I = eye(size(M));      % Identity matrix
+A = [zero, I;
+    -inv(M)*K, -inv(M)*C];
+
+% Eigenvalue computation
+[eigenvectors, eigenvalues] = eig(A);
+
+% Retrieve eigenvalues
+eigenvalues = diag(eigenvalues); % Convert diagonal matrix to column vector
 
