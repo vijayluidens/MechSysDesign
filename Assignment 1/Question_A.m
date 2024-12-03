@@ -248,7 +248,6 @@ figure(3);clf(3);
 bode(MA1,'k',MA2,'r--',opts)
 legend
 
-
 %% Modal Analysis with Damping 
 
 % Transfer Function of x1/F1 (l=1, k=1)
