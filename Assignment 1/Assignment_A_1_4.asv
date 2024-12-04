@@ -221,7 +221,7 @@ legend
 l=2;k=2;
 xF22=phi1(l)*phi1(k)/(MM1*s^2+MK1)+phi2(l)*phi2(k)/(MM2*s^2+MK2)+phi3(l)*phi3(k)/(MM3*s^2+MK3);
 xF22f = xF22 - xF21;
-bode(xF22f,w,opts); grid on
+bode(xF22f,w,opts); grid on; hold on
 
 % Transfer Function of x3/F2 (l=3, k=2)
 l=3;k=2;
@@ -237,7 +237,7 @@ MA1 = [xF11, xF12;
        xF21, xF22;
        xF31, xF32];
 
-%[x] = [MA2]*[F] :- Relatting  MA2to input (Actuator Forces) and output vectors
+%[x] = [MA2]*[F] :- Relatting  MA2 to input (Actuator Forces) and output vectors
 MA2 = [xF11, xF12f;
        xF21, xF22f;
        xF31, xF32f];
@@ -247,14 +247,3 @@ opts.PhaseVisible = 'off';
 figure(3);clf(3);
 bode(MA1,'k',MA2,'r--',opts)
 legend
-
-%% Modal Analysis with Damping 
-
-% Transfer Function of x1/F1 (l=1, k=1)
-xF11d=phi1(1)*phi1(1)/(MM1*s^2+MC1*s+MK1)+phi2(1)*phi2(1)/(MM2*s^2+MC2*s+MK2)+phi3(1)*phi3(1)/(MM3*s^2+MC3*s+MK3); % Damping Included
-
-% Transfer function of x2/F1 (l=2, k=1)
-xF21d = phi1(1)*phi1(2)/(MM1*s^2 + MC1*s + MK1)+phi2(1)*phi2(2)/(MM2*s^2+MC2*s+MK2)+phi3(1)*phi3(2)/(MM3*s^2+MC3*s+MK3); % Damping included
-
-% Transfer Function of x3/F1 (l=3, k=1)
-xF31d = phi1(1)*phi1(3)/(MM1*s^2 + MC1*s + MK1)+phi2(1)*phi2(3)/(MM2*s^2+MC2*s+MK2)+phi3(1)*phi3(3)/(MM3*s^2+MC3*s+MK3);
