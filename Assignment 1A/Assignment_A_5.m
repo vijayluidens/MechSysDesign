@@ -172,7 +172,7 @@ legend
 %[x] = [H]*[F] :- Relatting H to input and output vectors
 H = [H_x1F1, H_x1F2, H_x1F3;
      H_x2F1, H_x2F2, H_x2F3;
-     H_x3F1, H_x3F2, H_x3F3];
+     H_x3F1, H_x3F2, H_x3F3]
 
 %Save H variable to .mat file
 save('data_H.mat', 'H');

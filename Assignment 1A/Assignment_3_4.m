@@ -133,7 +133,7 @@ MA1 = [xF11, xF12;
 %[x] = [MA2]*[F] :- Relatting  MA2 to input (Actuator Forces) and output vectors
 MA2 = [xF11, xF12f;
        xF21, xF22f;
-       xF31, xF32f]
+       xF31, xF32f];
 
 opts.PhaseVisible = 'off';
 
