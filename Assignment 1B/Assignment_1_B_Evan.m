@@ -96,64 +96,6 @@ ylabel('Coherence');
 % subplot(3,1,3);semilogx(f,C); grid on; hold on;
 % ylabel('Coherence'); xlim([10 1e4]);
 
-
-%%
-% System Identification
-% ts = 30e-6; % Sampling Time (seconds)
-% fs = 1/ts; % Sampling Frequency (Hz)
-% 
-% input = u'; % Input signal
-% output = y; % Output signal
-% 
-% ft = logspace(-1, 4, 1000); % Frequency vector dataset
-% 
-% % Define windows
-% % windows = {'rectwin', 'hann', 'hamming'};
-% windows = {'hann', 'hamming'};
-% %window_labels = {'Rectangular', 'Hann', 'Hamming'}; % For the legend
-% window_labels = {'Hann', 'Hamming'}; % For the legend
-% colors = {'r', 'g', 'b'}; % Colors for each window
-% 
-% % Initialize figure
-% figure(5); clf(5);
-% 
-% % Loop through each window type
-% for i = 1:length(windows)
-%     % Create window
-%     window = feval(windows{i}, L); % 256-sample window length
-% 
-%     % Estimate Frequency Response and Coherence
-%     [H, f] = tfestimate(input, output, window, [], ft, fs);
-%     [C, f] = mscohere(input, output, window, [], ft, fs);
-% 
-%     % Plot Magnitude
-%     subplot(3, 1, 1);
-%     semilogx(f, mag2db(abs(H)), colors{i}, 'DisplayName', window_labels{i});
-%     hold on; grid on;
-%     ylabel('|G| dB');
-% 
-%     % Plot Phase
-%     subplot(3, 1, 2);
-%     semilogx(f, rad2deg(angle(H)), colors{i}, 'DisplayName', window_labels{i});
-%     hold on; grid on;
-%     ylabel('Phase G (deg)');
-% 
-%     % Plot Coherence
-%     subplot(3, 1, 3);
-%     semilogx(f, C, colors{i}, 'DisplayName', window_labels{i});
-%     hold on; grid on;
-%     ylabel('Coherence');
-% end
-% 
-% % Finalize plots
-% for j = 1:3
-%     subplot(3, 1, j);
-%     legend('Location', 'Best'); % Add legend
-% end
-% 
-% xlabel('Frequency (Hz)'); % Add x-axis label to the bottom plot
-
-
 %% Obtain Continuous Time Transfer Function
 
 % Generate data file to be used in tfest() function
@@ -166,13 +108,12 @@ data = frd(H,f,ts); %Make FRD Data
 % Important to model delay for controller design
 
 np = 10; % Tune number of poles
-nz = 7; % Tune number of zeros
-iodelay = 0; % Tune delay 
+nz = 8; % Tune number of zeros
+iodelay = 1150e-6; % Tune delay 
 sys = tfest(data,np,nz,iodelay);
 figure('Name', 'p12z8d0', 'NumberTitle', 'off');
 compare(data, sys);
 Pnump = sys.Numerator;
 Pdenp = sys.Denominator;
 Ptf = tf(Pnump,Pdenp);
-figure(3);clf(3); 
-[mag, phase, f]bode(Ptf) %Plant Transfer Function from Identification
+

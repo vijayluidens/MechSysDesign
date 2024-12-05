@@ -1,9 +1,6 @@
 %% MSD 2024 Assignment Part 1: Open-loop System Identification
 % Script prepared by: Aditya Natu, PhD Candidate, Mechatronics System Design
 
-% Clear all
-clc;clear
-
 %% Define parameters for chirp signal
 ts = 30e-6; % Sampling Time (in seconds)
 fmin = 1; % Start Frequency (in Hz)
@@ -22,7 +19,7 @@ method = 'linear'; % or 'logarithmic'
 u = chirp(t, fmin, tmax, fmax, method); % Generate a chirp signal
 
 %% Define the white noise (realisitic with normal distribution)
-% vr = 1; %Define variance
+% vr = 10; %Define variance
 % u = sqrt(vr)*randn(length(t),1); % Generate white noise with variance = vr
 
 %% Call the obfuscated Plant.p function
@@ -54,7 +51,7 @@ output = y;
 ft = logspace(-1,4,1000); % Define frequency vector data set
 % Estimate Frequency Response using tfestimate()
 L = length(u);
-wind = rectwin(L); % hann(), or rectwin() etc.
+wind = rectwin(L/2); % hann(), or rectwin() etc.
 [T,f] = tfestimate(input, output, wind, [], ft, fs); 
 [C,f] = mscohere(input, output, wind, [], ft, fs);
 
@@ -89,28 +86,27 @@ data = frd(T, f, ts); % Make FRD Data
 % Important to model delay for controller design
 
 np = 10; % Tune number of poles
-nz = 8; % Tune number of zeros
-iodelay = 0; % Tune delay 
+nz = 7; % Tune number of zeros
+iodelay = 1150e-6; % Tune delay 
 sys = tfest(data, np, nz, iodelay);
 Pnump = sys.Numerator;
 Pdenp = sys.Denominator;
-Ptf = tf(Pnump, Pdenp);
+Ptf = tf(Pnump, Pdenp)
 
-[mag, phase, ~] = bode(Ptf, f); % Plant Transfer Function from Identification
-mag = squeeze(mag);
-phase = squeeze(phase) - 360; % Adjust phase for better visualization
+[mag, phase, f] = bode(Ptf, f); % Plant Transfer Function from Identification
 
 % Add Bode plot of the identified transfer function to figure(2)
 subplot(3,1,1);
-semilogx(f, mag2db(mag), 'r--'); % Add magnitude in red dotted line
-legend('Estimated T', 'System Identification'); % Add legend
+semilogx(f, mag2db(squeeze(mag)), 'r--'); % Add magnitude in red dotted line
+legend('Estimated T', 'System Identification', Location='southwest'); % Add legend
 
+% 
 subplot(3,1,2);
-semilogx(f, phase, 'r--'); % Add phase in red dotted line
-legend('Estimated T', 'System Identification'); % Add legend
+semilogx(f, squeeze(phase), 'r--'); % Add phase in red dotted line
+legend('Estimated T', 'System Identification', Location='southwest'); % Add legend
 
 subplot(3,1,3);
-legend('Estimated T'); % Only one curve here
+legend('Estimated T', Location='southwest'); % Only one curve here
 
 figure(3);clf(3);
 bode(Ptf)
