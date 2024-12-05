@@ -2,10 +2,9 @@
 % Script prepared by: Aditya Natu, PhD Candidate, Mechatronics System Design
 
 %% Define parameters for chirp signal
-clc;clear
 ts = 30e-6; % Sampling Time (in seconds)
 fmin = 1; % Start Frequency (in Hz)
-fmax = 10000; % Max Frequency in Chirp (in Hz)
+fmax = 100000; % Max Frequency in Chirp (in Hz)
 
 totaltime = 10; % in seconds
 t = 0:ts:totaltime; % Time vector
@@ -16,12 +15,12 @@ tmax = t(end); % Time of chirp signal
 % Total time for appended signal should be the specified totaltime (variable)
 
 % Define chirp method
-method = 'linear'; % 'linear' or 'logarithmic'
+method = 'linear'; % or 'logarithmic'
 u = chirp(t, fmin, tmax, fmax, method); % Generate a chirp signal
 
 %% Define the white noise (realisitic with normal distribution)
-% vr = 10 % Define variance
-% u = sqrt(vr)*randn(length(t),1) % Generate white noise with variance = vr
+% vr = 1; %Define variance
+% u = sqrt(vr)*randn(length(t),1); % Generate white noise with variance = vr
 
 %% Call the obfuscated Plant.p function
 y = Plant(u, t); % Process the chirp signal through the system
@@ -51,57 +50,23 @@ input = u';
 output = y;
 
 ft = logspace(-1,4,1000); % Define frequency vector data set
-
 % Estimate Frequency Response using tfestimate()
 L = length(u);
-window =[]; % hann(), or rectwin(), hamming() etc.
-[H,f] = tfestimate(input,output,window,[],ft,fs); 
-[C,f] = mscohere(input,output,window,[],ft,fs);
-
-[H2,f2] = tfestimate(input,output,hann(L),[],ft,fs); 
-[C2,f2] = mscohere(input,output,hann(L),[],ft,fs);
-
-[H3,f3] = tfestimate(input,output,rectwin(L),[],ft,fs); 
-[C3,f3] = mscohere(input,output,rectwin(L),[],ft,fs);
+wind = [];% hann(), or rectwin() etc.
+[T,f] = tfestimate(input,output,wind,[],ft,fs); 
+[C,f] = mscohere(input,output,wind,[],ft,fs);
 
 figure(2);clf(2);
-subplot(3,1,1);semilogx(f,mag2db(abs(H))); grid on; hold on;
-ylabel('|G| dB');
-subplot(3,1,2);semilogx(f,rad2deg(angle(H))); grid on; hold on;
-ylabel('Phase G(dB)');
+subplot(3,1,1);semilogx(f,mag2db(abs(T))); grid on; hold on;
+subplot(3,1,2);semilogx(f,rad2deg(angle(T))); grid on; hold on;
 subplot(3,1,3);semilogx(f,C); grid on; hold on;
-ylabel('Coherence');
-
-figure(7);clf(7);
-subplot(3,1,1);semilogx(f2,mag2db(abs(H2))); grid on; hold on;
-ylabel('|G| dB'); xlim([1e2 1e5])
-subplot(3,1,2);semilogx(f2,rad2deg(angle(H2))); grid on; hold on;
-ylabel('Phase G(dB)');
-subplot(3,1,3);semilogx(f2,C2); grid on; hold on;
-ylabel('Coherence');
-
-figure(8);clf(8);
-subplot(3,1,1);semilogx(f3,mag2db(abs(H3))); grid on; hold on;
-ylabel('|G| dB');
-subplot(3,1,2);semilogx(f3,rad2deg(angle(H3))); grid on; hold on;
-ylabel('Phase G(dB)');
-subplot(3,1,3);semilogx(f3,C3); grid on; hold on;
-ylabel('Coherence');
-
-% figure(4);clf(4);
-% subplot(3,1,1);semilogx(f,mag2db(abs(H))); grid on; hold on;
-% ylabel('|G| dB'); xlim([10 1e4]);
-% subplot(3,1,2);semilogx(f,rad2deg(angle(H))); grid on; hold on;
-% ylabel('Phase G(dB)'); xlim([10 1e4]);
-% subplot(3,1,3);semilogx(f,C); grid on; hold on;
-% ylabel('Coherence'); xlim([10 1e4]);
 
 %% Obtain Continuous Time Transfer Function
 
 % Generate data file to be used in tfest() function
-%data = iddata(output,input,ts); %Make Input-Output Data
+% data = iddata(output,input,ts); %Make Input-Output Data
 %OR
-data = frd(H,f,ts); %Make FRD Data
+data = frd(T,2*pi*f,ts); %Make FRD Data
 
 % Use tfest() function to obtain transfer function from data
 % General Configuration: sys = tfest(data,np,nz,iodelay);
@@ -111,9 +76,17 @@ np = 10; % Tune number of poles
 nz = 7; % Tune number of zeros
 iodelay = 0; % Tune delay 
 sys = tfest(data,np,nz,iodelay);
-figure('Name', 'p12z8d0', 'NumberTitle', 'off');
-compare(data, sys);
 Pnump = sys.Numerator;
 Pdenp = sys.Denominator;
 Ptf = tf(Pnump,Pdenp);
 
+[mag, phase, ~] = bode(Ptf, 2*pi*f); % Plant Transfer Function from Identification
+mag = squeeze(mag);
+phase = squeeze(phase) - 360; % Adjust phase for better visualization
+
+% Add Bode plot of the identified transfer function to figure(2)
+subplot(3,1,1);
+semilogx(f, mag2db(mag), 'r--'); % Add magnitude in red dotted line
+
+subplot(3,1,2);
+semilogx(f, phase, 'r--'); % Add phase in red dotted line
