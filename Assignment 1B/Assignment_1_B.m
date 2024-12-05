@@ -1,0 +1,180 @@
+%% MSD 2024 Assignment Part 1: Open-loop System Identification
+% Script prepared by: Aditya Natu, PhD Candidate, Mechatronics System Design
+
+%% Define parameters for chirp signal
+clc;clear
+ts = 30e-6 % Sampling Time (in seconds)
+fmin = 1 % Start Frequency (in Hz)
+fmax = 10000 % Max Frequency in Chirp (in Hz)
+
+totaltime = 10 % in seconds
+t = 0:ts:totaltime % Time vector
+
+% Define the chirp signal
+tmax = t(end) % Time of chirp signal
+% If tmax < t(end), append the signals to generate multiple chirp signals
+% Total time for appended signal should be the specified totaltime (variable)
+
+% Define chirp method
+method = 'linear' % 'linear' or 'logarithmic'
+u = chirp(t, fmin, tmax, fmax, method); % Generate a chirp signal
+
+%% Define the white noise (realisitic with normal distribution)
+% vr = 10 % Define variance
+% u = sqrt(vr)*randn(length(t),1) % Generate white noise with variance = vr
+
+%% Call the obfuscated Plant.p function
+y = Plant(u, t); % Process the chirp signal through the system
+
+% Plot the input and output signals
+figure(1);clf(1);
+subplot(2, 1, 1);
+plot(t, u);
+title('Input Chirp Signal');
+xlabel('Time (s)');
+ylabel('Amplitude');
+
+subplot(2, 1, 2);
+plot(t, y);
+title('Output Signal');
+xlabel('Time (s)');
+ylabel('Amplitude');
+
+
+%% System Identification
+% This section to be run after generating the input-output signals
+
+ts = 30e-6; %Sampling Time (seconds)
+fs = 1/ts; %Sampling Frequency (Hz)
+
+input = u';
+output = y;
+
+ft = logspace(-1,4,1000); % Define frequency vector data set
+
+% Estimate Frequency Response using tfestimate()
+L = length(u);
+window =[]; % hann(), or rectwin(), hamming() etc.
+[H,f] = tfestimate(input,output,window,[],ft,fs); 
+[C,f] = mscohere(input,output,window,[],ft,fs);
+
+[H2,f2] = tfestimate(input,output,hann(L),[],ft,fs); 
+[C2,f2] = mscohere(input,output,hann(L),[],ft,fs);
+
+[H3,f3] = tfestimate(input,output,rectwin(L),[],ft,fs); 
+[C3,f3] = mscohere(input,output,rectwin(L),[],ft,fs);
+
+figure(2);clf(2);
+subplot(3,1,1);semilogx(f,mag2db(abs(H))); grid on; hold on;
+ylabel('|G| dB');
+subplot(3,1,2);semilogx(f,rad2deg(angle(H))); grid on; hold on;
+ylabel('Phase G(dB)');
+subplot(3,1,3);semilogx(f,C); grid on; hold on;
+ylabel('Coherence');
+
+figure(7);clf(7);
+subplot(3,1,1);semilogx(f2,mag2db(abs(H2))); grid on; hold on;
+ylabel('|G| dB'); xlim([1e2 1e5])
+subplot(3,1,2);semilogx(f2,rad2deg(angle(H2))); grid on; hold on;
+ylabel('Phase G(dB)');
+subplot(3,1,3);semilogx(f2,C2); grid on; hold on;
+ylabel('Coherence');
+
+figure(8);clf(8);
+subplot(3,1,1);semilogx(f3,mag2db(abs(H3))); grid on; hold on;
+ylabel('|G| dB');
+subplot(3,1,2);semilogx(f3,rad2deg(angle(H3))); grid on; hold on;
+ylabel('Phase G(dB)');
+subplot(3,1,3);semilogx(f3,C3); grid on; hold on;
+ylabel('Coherence');
+
+% figure(4);clf(4);
+% subplot(3,1,1);semilogx(f,mag2db(abs(H))); grid on; hold on;
+% ylabel('|G| dB'); xlim([10 1e4]);
+% subplot(3,1,2);semilogx(f,rad2deg(angle(H))); grid on; hold on;
+% ylabel('Phase G(dB)'); xlim([10 1e4]);
+% subplot(3,1,3);semilogx(f,C); grid on; hold on;
+% ylabel('Coherence'); xlim([10 1e4]);
+
+
+%%
+% System Identification
+% ts = 30e-6; % Sampling Time (seconds)
+% fs = 1/ts; % Sampling Frequency (Hz)
+% 
+% input = u'; % Input signal
+% output = y; % Output signal
+% 
+% ft = logspace(-1, 4, 1000); % Frequency vector dataset
+% 
+% % Define windows
+% % windows = {'rectwin', 'hann', 'hamming'};
+% windows = {'hann', 'hamming'};
+% %window_labels = {'Rectangular', 'Hann', 'Hamming'}; % For the legend
+% window_labels = {'Hann', 'Hamming'}; % For the legend
+% colors = {'r', 'g', 'b'}; % Colors for each window
+% 
+% % Initialize figure
+% figure(5); clf(5);
+% 
+% % Loop through each window type
+% for i = 1:length(windows)
+%     % Create window
+%     window = feval(windows{i}, L); % 256-sample window length
+% 
+%     % Estimate Frequency Response and Coherence
+%     [H, f] = tfestimate(input, output, window, [], ft, fs);
+%     [C, f] = mscohere(input, output, window, [], ft, fs);
+% 
+%     % Plot Magnitude
+%     subplot(3, 1, 1);
+%     semilogx(f, mag2db(abs(H)), colors{i}, 'DisplayName', window_labels{i});
+%     hold on; grid on;
+%     ylabel('|G| dB');
+% 
+%     % Plot Phase
+%     subplot(3, 1, 2);
+%     semilogx(f, rad2deg(angle(H)), colors{i}, 'DisplayName', window_labels{i});
+%     hold on; grid on;
+%     ylabel('Phase G (deg)');
+% 
+%     % Plot Coherence
+%     subplot(3, 1, 3);
+%     semilogx(f, C, colors{i}, 'DisplayName', window_labels{i});
+%     hold on; grid on;
+%     ylabel('Coherence');
+% end
+% 
+% % Finalize plots
+% for j = 1:3
+%     subplot(3, 1, j);
+%     legend('Location', 'Best'); % Add legend
+% end
+% 
+% xlabel('Frequency (Hz)'); % Add x-axis label to the bottom plot
+
+
+%% Obtain Continuous Time Transfer Function
+
+% Generate data file to be used in tfest() function
+%data = iddata(output,input,ts); %Make Input-Output Data
+%OR
+data = frd(H,f,ts); %Make FRD Data
+
+% Use tfest() function to obtain transfer function from data
+% General Configuration: sys = tfest(data,np,nz,iodelay);
+% Important to model delay for controller design
+
+np = 7; % Tune number of poles
+nz = 3; % Tune number of zeros
+iodelay = 0; % Tune delay 
+sys = tfest(data,np,nz,iodelay);
+Pnump = sys.Numerator;
+Pdenp = sys.Denominator;
+Ptf = tf(Pnump,Pdenp);
+figure(3);clf(3); 
+bode(Ptf) %Plant Transfer Function from Identification
+
+
+
+
